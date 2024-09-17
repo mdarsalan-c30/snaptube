@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PyScript YouTube Downloader</title>
+    <link rel="stylesheet" href="https://pyscript.net/latest/pyscript.css" />
+    <script defer src="https://pyscript.net/latest/pyscript.js"></script>
+</head>
+<body>
+    <h1>YouTube Video Downloader</h1>
+
+    <!-- Form to Input YouTube URL -->
+    <form id="download-form">
+        <label for="url">Enter YouTube Video URL:</label><br>
+        <input type="text" id="url" name="url" placeholder="https://www.youtube.com/watch?v=example" required><br><br>
+        <button type="button" id="download-button">Download Video</button>
+    </form>
+
+    <!-- Message area to display status -->
+    <div id="message"></div>
+
+    <!-- PyScript for downloading YouTube Video -->
+    <py-script>
+        from pyodide.http import pyfetch
+
+        async def download_video(event):
+            # Get URL from input field
+            url = document.querySelector("#url").value
+
+            if not url.startswith("https://www.youtube.com/watch"):
+                document.querySelector("#message").innerText = "Please enter a valid YouTube URL."
+                return
+            
+            # Backend API for handling video download
+            backend_url = "http://localhost:5000/api/download"  # Replace with your backend API
+
+            try:
+                # Make a request to backend service to download the video
+                response = await pyfetch(
+                    url=backend_url,
+                    method="POST",
+                    headers={"Content-Type": "application/json"},
+                    body=f'{{"video_url": "{url}"}}'
+                )
+                if response.status == 200:
+                    # Parse the JSON response
+                    result = await response.json()
+                    download_link = result.get('download_url', '')
+
+                    # Display the download link
+                    document.querySelector("#message").innerHTML = f'<a href="{download_link}">Download Video</a>'
+                else:
+                    document.querySelector("#message").innerText = "Error downloading video."
+            except Exception as e:
+                document.querySelector("#message").innerText = f"An error occurred: {str(e)}"
+
+        # Add event listener to the download button
+        document.querySelector("#download-button").addEventListener("click", download_video)
+    </py-script>
+</body>
+</html>
