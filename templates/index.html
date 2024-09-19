@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PyScript YouTube Downloader</title>
+    <title>YouTube Video Downloader</title>
     <link rel="stylesheet" href="https://pyscript.net/latest/pyscript.css" />
     <script defer src="https://pyscript.net/latest/pyscript.js"></script>
 </head>
@@ -31,15 +31,15 @@
             if not url.startswith("https://www.youtube.com/watch"):
                 document.querySelector("#message").innerText = "Please enter a valid YouTube URL."
                 return
-            
+
             # Backend API for handling video download
-            backend_url = "https://snaptube-1.onrender.com/api/download"  # Corrected backend URL
+            backend_url = "https://snaptube-1.onrender.com/api/download"  # Ensure this URL is correct
 
             try:
                 # Make a request to backend service to download the video
                 response = await pyfetch(
                     url=backend_url,
-                    method="POST",
+                    method="POST",  # Make sure the method is POST
                     headers={"Content-Type": "application/json"},
                     body=f'{{"video_url": "{url}"}}'
                 )
@@ -49,7 +49,7 @@
                     download_link = result.get('download_url', '')
 
                     # Display the download link
-                    document.querySelector("#message").innerHTML = f'<a href="{download_link}" download>Download Video</a>'
+                    document.querySelector("#message").innerHTML = f'<a href="{download_link}">Download Video</a>'
                 else:
                     document.querySelector("#message").innerText = "Error downloading video."
             except Exception as e:
