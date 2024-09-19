@@ -1,6 +1,7 @@
 from flask import Flask, request, jsonify, send_from_directory
 from pytube import YouTube
 import os
+from pytube.exceptions import VideoUnavailable
 
 app = Flask(__name__)
 
@@ -27,14 +28,20 @@ def download_video():
         # Return the download link for the frontend
         return jsonify({'download_url': f'/downloaded_videos/{video_filename}'}), 200
 
+    except VideoUnavailable:
+        return jsonify({'error': 'Video is unavailable or URL is invalid.'}), 404
     except Exception as e:
-        # Return error message in case of failure
+        # Return a general error message in case of failure
         return jsonify({'error': str(e)}), 400
 
 # Route to serve the downloaded video file
 @app.route('/downloaded_videos/<filename>')
 def serve_video(filename):
+    # Safeguard to check if file exists
+    if not os.path.exists(os.path.join(DOWNLOAD_FOLDER, filename)):
+        return jsonify({"error": "File not found!"}), 404
     return send_from_directory(DOWNLOAD_FOLDER, filename)
 
-if __name__ == '__main__':
-    app.run(debug=True)
+# Remove the following block in production
+# if __name__ == '__main__':
+#    app.run(debug=True)
