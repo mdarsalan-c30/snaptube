@@ -1,7 +1,6 @@
 from flask import Flask, request, jsonify, send_from_directory
 from pytube import YouTube
 import os
-from pytube.exceptions import VideoUnavailable
 
 app = Flask(__name__)
 
@@ -10,16 +9,14 @@ DOWNLOAD_FOLDER = 'downloaded_videos'
 if not os.path.exists(DOWNLOAD_FOLDER):
     os.makedirs(DOWNLOAD_FOLDER)
 
-# Route for the root URL
-@app.route('/')
-def home():
-    return "<h1>Welcome to Snaptube API!</h1><p>Use the /api/download endpoint to download YouTube videos.</p>"
-
 # Route to download YouTube video
 @app.route('/api/download', methods=['POST'])
 def download_video():
     data = request.get_json()
     video_url = data.get('video_url')
+
+    if not video_url:
+        return jsonify({'error': 'No video URL provided'}), 400
 
     try:
         # Use PyTube to download the video
@@ -33,17 +30,14 @@ def download_video():
         # Return the download link for the frontend
         return jsonify({'download_url': f'/downloaded_videos/{video_filename}'}), 200
 
-    except VideoUnavailable:
-        return jsonify({'error': 'Video is unavailable or URL is invalid.'}), 404
     except Exception as e:
-        # Return a general error message in case of failure
+        # Return error message in case of failure
         return jsonify({'error': str(e)}), 400
 
 # Route to serve the downloaded video file
 @app.route('/downloaded_videos/<filename>')
 def serve_video(filename):
-    # Safeguard to check if file exists
-    if not os.path.exists(os.path.join(DOWNLOAD_FOLDER, filename)):
-        return jsonify({"error": "File not found!"}), 404
     return send_from_directory(DOWNLOAD_FOLDER, filename)
 
+if __name__ == '__main__':
+    app.run(debug=True)
