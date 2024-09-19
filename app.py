@@ -10,6 +10,11 @@ DOWNLOAD_FOLDER = 'downloaded_videos'
 if not os.path.exists(DOWNLOAD_FOLDER):
     os.makedirs(DOWNLOAD_FOLDER)
 
+# Route for the root URL
+@app.route('/')
+def home():
+    return "<h1>Welcome to Snaptube API!</h1><p>Use the /api/download endpoint to download YouTube videos.</p>"
+
 # Route to download YouTube video
 @app.route('/api/download', methods=['POST'])
 def download_video():
@@ -42,6 +47,3 @@ def serve_video(filename):
         return jsonify({"error": "File not found!"}), 404
     return send_from_directory(DOWNLOAD_FOLDER, filename)
 
-# Remove the following block in production
-# if __name__ == '__main__':
-#    app.run(debug=True)
